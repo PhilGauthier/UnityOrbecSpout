@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class SkeletonRenderer : MonoBehaviour
 {
+    [SerializeField]
+    private OscJack.OscPropertySender _oscSender;
     private long _lastFrameIndex = -1;
 
     private Astra.Body[] _bodies;
@@ -131,11 +133,11 @@ public class SkeletonRenderer : MonoBehaviour
 
                     if (bodyJoint.Type == Astra.JointType.LeftHand)
                     {
-                        UpdateHandPoseVisual(skeletonJoint, body.HandPoseInfo.LeftHand);
+                        UpdateHandPoseVisual(skeletonJoint, body.HandPoseInfo.LeftHand, "Left");
                     }
                     else if (bodyJoint.Type == Astra.JointType.RightHand)
                     {
-                        UpdateHandPoseVisual(skeletonJoint, body.HandPoseInfo.RightHand);
+                        UpdateHandPoseVisual(skeletonJoint, body.HandPoseInfo.RightHand, "Right");
                     }
                 }
                 else
@@ -146,12 +148,18 @@ public class SkeletonRenderer : MonoBehaviour
         }
     }
 
-    private void UpdateHandPoseVisual(GameObject skeletonJoint, Astra.HandPose pose)
+    private void UpdateHandPoseVisual(GameObject skeletonJoint, Astra.HandPose pose, string name)
     {
         Vector3 targetScale = NormalPoseScale;
         if (pose == Astra.HandPose.Grip)
         {
             targetScale = GripPoseScale;
+        }        
+        if (_oscSender._dataSource == null)
+        {
+            _oscSender._dataSource = skeletonJoint.transform;
+            _oscSender._oscAddress = "/unity/Hands/"+ name;
+            _oscSender._propertyName = "Hand" + name;
         }
         skeletonJoint.transform.localScale = targetScale;
     }
